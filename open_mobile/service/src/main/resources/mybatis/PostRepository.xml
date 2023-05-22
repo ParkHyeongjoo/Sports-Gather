@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.opennote.booster.post.repository.PostRepository">
+
+    <select id="getList" resultType="post">
+        SELECT
+            UUID,
+            REGR_ID,
+            REG_DT,
+            UPDR_ID,
+            UPD_DT,
+            CATEGORY,
+            TITLE,
+            CONTENT,
+            VIEWS,
+            ATFL_ID,
+            USE_YN
+        FROM T_POST
+        WHERE USE_YN = 'Y'
+            <if test="divn != '최신글'">
+                AND CATEGORY = #{divn}
+            </if>
+        ORDER BY REG_DT DESC
+    </select>
+
+    <select id="getRequestList" resultType="post">
+        SELECT
+            UUID,
+            REGR_ID,
+            REG_DT,
+            UPDR_ID,
+            UPD_DT,
+            CATEGORY,
+            TITLE,
+            CONTENT,
+            VIEWS,
+            ATFL_ID,
+            USE_YN
+        FROM T_POST
+        WHERE USE_YN = 'Y'
+            <if test="divn != null and divn != '' and divn != '전체게시판'">
+                AND CATEGORY = #{divn}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (REGR_ID LIKE '%${keyword}%' OR TITLE LIKE '%${keyword}%')
+            </if>
+        ORDER BY REG_DT DESC
+    </select>
+
+    <select id="get" parameterType="String" resultType="post">
+        SELECT
+            UUID,
+            REGR_ID,
+            REG_DT,
+            UPDR_ID,
+            UPD_DT,
+            CATEGORY,
+            TITLE,
+            CONTENT,
+            VIEWS,
+            ATFL_ID,
+            USE_YN
+        FROM T_POST
+        WHERE USE_YN = 'Y'
+            AND UUID = #{uuid}
+    </select>
+
+    <insert id="register" parameterType="post">
+        INSERT INTO T_POST(
+            UUID,
+            REGR_ID,
+            CATEGORY,
+            TITLE,
+            CONTENT,
+            ATFL_ID
+        ) VALUES (
+            #{uuid},
+            #{regrId},
+            #{category},
+            #{title},
+            #{content},
+            #{atflId}
+        )
+    </insert>
+
+    <update id="increaseViews" parameterType="String">
+        UPDATE T_POST
+            SET VIEWS = VIEWS + 1
+        WHERE UUID = #{uuid}
+    </update>
+
+    <update id="patch" parameterType="post">
+        UPDATE T_POST
+            SET UPDR_ID = #{updrId},
+                UPD_DT = SYSDATE,
+                CATEGORY = #{category},
+                TITLE = #{title},
+                CONTENT = #{content},
+                ATFL_ID = #{atflId}
+        WHERE UUID = #{uuid}
+    </update>
+
+    <update id="delete" parameterType="String">
+        UPDATE T_POST
+            SET USE_YN = 'N'
+        WHERE UUID = #{uuid}
+    </update>
+</mapper>

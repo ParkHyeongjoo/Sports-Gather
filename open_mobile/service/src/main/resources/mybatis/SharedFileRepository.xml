@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.opennote.booster.sharedFile.repository.SharedFileRepository">
+
+    <select id="getList" parameterType="String" resultType="sharedFile">
+        SELECT
+            UUID,
+            REGR_ID,
+            REG_DT,
+            UPDR_ID,
+            UPD_DT,
+            TITLE,
+            ATFL_ID,
+            USE_YN
+        FROM
+        (   SELECT
+                A.*,
+                ( SELECT
+                    LISTAGG(TAG_NM, ',') WITHIN GROUP (ORDER BY TAG_NM)
+                  FROM T_HASH_TAG_BOARD B, T_HASH_TAG C
+                  WHERE A.UUID = B.BOARD_UUID AND B.TAG_UUID = C.UUID AND C.USE_YN = 'Y' ) as TAG
+            FROM T_FILE_SHARE A
+            WHERE USE_YN = 'Y'  )
+        WHERE 1=1
+        <if test="@io.micrometer.common.util.StringUtils@isNotEmpty(keyword)">
+            AND ( TITLE LIKE '%'||#{keyword}||'%' OR TAG LIKE '%'||#{keyword}||'%' )
+        </if>
+        ORDER BY REG_DT DESC
+    </select>
+
+    <select id="get" parameterType="String" resultType="sharedFile">
+        SELECT
+            UUID,
+            REGR_ID,
+            REG_DT,
+            UPDR_ID,
+            UPD_DT,
+            TITLE,
+            ATFL_ID,
+            USE_YN
+        FROM T_FILE_SHARE
+        WHERE USE_YN = 'Y'
+            AND UUID = #{uuid}
+    </select>
+
+    <insert id="post" parameterType="sharedFile">
+        INSERT INTO T_FILE_SHARE(
+            UUID,
+            REGR_ID,
+            TITLE,
+            ATFL_ID
+        ) VALUES (
+            #{uuid},
+            #{regrId},
+            #{title},
+            #{atflId}
+        )
+    </insert>
+
+    <update id="patch" parameterType="sharedFile">
+        UPDATE T_FILE_SHARE
+        SET TITLE = #{title},
+            ATFL_ID = #{atflId},
+            UPDR_ID = #{updrId},
+            UPD_DT = SYSDATE
+        WHERE UUID = #{uuid}
+    </update>
+
+    <update id="delete" parameterType="String">
+        UPDATE T_FILE_SHARE
+        SET USE_YN = 'N'
+        WHERE UUID = #{uuid}
+    </update>
+</mapper>

@@ -1,0 +1,44 @@
+mybatis:
+  mapper-locations: mybatis/**/*.xml # mapper.xml 위치 지정
+  configuration:
+    map-underscore-to-camel-case: true # java map camel case 설정
+    jdbc-type-for-null: varchar # parameter null 처리
+    call-setters-on-nulls: true
+  type-aliases-package: kr.co.opennote.booster # alias 설정
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+--- #local
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@118.40.116.150:1521:open
+    username: OPEN_MOBILE
+    password: open1010!
+
+file:
+  upload:
+    path: /Users/sinminseog/Desktop/workspace/attach/booster # 본인 경로에 맞추세요
+#    path: C:\workspace\upload\booster\
+
+--- #dev
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@118.40.116.150:1521:open
+    username: OPEN_MOBILE
+    password: open1010!
+
+file:
+  upload:
+    path: /home/openmobile01/upload/

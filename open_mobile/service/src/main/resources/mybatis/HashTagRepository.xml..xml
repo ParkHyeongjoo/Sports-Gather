@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.opennote.booster.hashTag.repository.HashTagRepository">
+    <select id="getByTagNm" parameterType="String" resultType="hashTag">
+        SELECT
+            UUID,
+            TAG_NM
+        FROM T_HASH_TAG
+        WHERE TAG_NM = #{tagNm}
+    </select>
+
+    <select id="getListByBoardUuid" parameterType="String" resultType="hashTag">
+        SELECT
+            B.TAG_UUID,
+            B.BOARD_UUID,
+            A.UUID,
+            A.TAG_NM,
+            A.USE_YN
+        FROM T_HASH_TAG A, T_HASH_TAG_BOARD B
+        WHERE A.UUID = B.TAG_UUID
+            AND A.USE_YN = 'Y'
+            AND B.BOARD_UUID = #{uuid}
+    </select>
+
+    <insert id="postHashTag" parameterType="hashtag">
+        INSERT INTO T_HASH_TAG(
+            UUID,
+            TAG_NM
+        ) VALUES (
+            #{uuid},
+            #{tagNm}
+        )
+    </insert>
+
+    <insert id="postHashTagBoard" parameterType="hashtag">
+        INSERT INTO T_HASH_TAG_BOARD(
+            TAG_UUID,
+            BOARD_UUID
+        ) VALUES (
+            #{tagUuid},
+            #{boardUuid}
+        )
+    </insert>
+
+    <update id="deleteTagByBoardUuid" parameterType="String">
+        UPDATE T_HASH_TAG
+        SET USE_YN = 'N'
+        WHERE UUID = #{uuid}
+    </update>
+
+    <delete id="deleteTagBoard" parameterType="String">
+        DELETE T_HASH_TAG_BOARD
+        WHERE BOARD_UUID = #{uuid}
+    </delete>
+</mapper>

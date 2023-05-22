@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.opennote.booster.board.repository.BoardRepository">
+
+    <select id="getList" resultType="board">
+        SELECT
+            UUID,
+            REGR_ID,
+            REG_DT,
+            UPDR_ID,
+            UPD_DT,
+            CATEGORY,
+            USE_YN
+        FROM T_BOARD
+        WHERE USE_YN = 'Y'
+        ORDER BY REG_DT DESC
+    </select>
+
+    <insert id="register" parameterType="board">
+        INSERT INTO T_BOARD(
+            UUID,
+            REGR_ID,
+            CATEGORY
+        ) VALUES (
+            #{uuid},
+            #{regrId},
+            #{category}
+        )
+    </insert>
+</mapper>

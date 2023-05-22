@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.opennote.booster.vote.repository.VoteRepository">
+    <select id="getList" resultType="vote">
+        SELECT
+            UUID,
+            TO_CHAR(REG_DT, 'YYYY-MM-DD') regDt,
+            TITLE,
+            REGR_ID,
+            STRT_DT,
+            END_DT,
+            CASE
+                WHEN TRUNC(SYSDATE) &lt; TO_DATE(STRT_DT, 'YYYY-MM-DD') THEN 'A'
+                WHEN TRUNC(SYSDATE) &gt; TO_DATE(END_DT, 'YYYY-MM-DD') THEN 'C'
+                ELSE 'B'
+            END STATUS
+        FROM T_VOTE
+        WHERE USE_YN = 'Y'
+        ORDER BY STATUS, END_DT
+    </select>
+
+    <select id="getVoteItems" parameterType="String" resultType="voteItem">
+        SELECT
+        UUID,
+        BOARD_UUID,
+        CONT,
+        CNT,
+        ROUND(RATIO_TO_REPORT(CNT) OVER(), 2) * 100 AS percent
+        FROM T_VOTE_ITEM
+        WHERE BOARD_UUID = #{uuid}
+    </select>
+
+    <select id="get" parameterType="String" resultType="vote">
+        SELECT
+            UUID,
+            TO_CHAR(REG_DT, 'YYYY-MM-DD') regDt,
+            TITLE,
+            CONT,
+            REGR_ID,
+            STRT_DT,
+            END_DT,
+            VIEWS,
+            CASE
+                WHEN TRUNC(SYSDATE) &lt; TO_DATE(STRT_DT, 'YYYY-MM-DD') THEN 'A'
+                WHEN TRUNC(SYSDATE) &gt; TO_DATE(END_DT, 'YYYY-MM-DD') THEN 'C'
+                ELSE 'B'
+            END STATUS
+        FROM T_VOTE
+        WHERE USE_YN = 'Y'
+            AND UUID = #{uuid}
+    </select>
+
+    <select id="checkVoting" parameterType="String" resultType="boolean">
+        SELECT
+            DECODE ( COUNT(B.REGR_ID), 0, 0, 1 )
+        FROM T_VOTE_ITEM A, T_VOTING B
+        WHERE A.UUID = B.ITEM_UUID
+        AND A.BOARD_UUID = #{uuid}
+        AND B.REGR_ID = #{regrId}
+    </select>
+
+    <insert id="post" parameterType="vote">
+        INSERT INTO T_VOTE(
+            UUID,
+            TITLE,
+            CONT,
+            REGR_ID,
+            STRT_DT,
+            END_DT
+        ) VALUES (
+            #{uuid},
+            #{title},
+            #{cont},
+            #{regrId},
+            #{strtDt},
+            #{endDt}
+        )
+    </insert>
+
+    <insert id="postItem" parameterType="voteItem">
+        INSERT INTO T_VOTE_ITEM (
+            UUID,
+            BOARD_UUID,
+            CONT,
+            "ORDER"
+        ) VALUES (
+            #{uuid},
+            #{boardUuid},
+            #{cont},
+            #{order}
+        )
+    </insert>
+
+    <insert id="postVoting" parameterType="voting">
+        INSERT INTO T_VOTING (
+            UUID,
+            ITEM_UUID,
+            REGR_ID
+        ) VALUES (
+            #{uuid},
+            #{itemUuid},
+            #{regrId}
+        )
+    </insert>
+
+    <update id="patchItemCnt" parameterType="voteItem">
+        UPDATE T_VOTE_ITEM
+        SET CNT = CNT +1
+        WHERE UUID = #{uuid}
+    </update>
+
+    <update id="patch" parameterType="vote">
+        UPDATE T_VOTE
+        SET UPDR_ID = #{updrId},
+            UPD_DT = SYSDATE,
+            TITLE = #{title},
+            CONT = #{cont},
+            STRT_DT = #{strtDt},
+            END_DT = #{endDt}
+    </update>
+
+    <update id="patchViews" parameterType="vote">
+        UPDATE T_VOTE
+        SET VIEWS = VIEWS +1
+        WHERE UUID = #{uuid}
+    </update>
+
+    <delete id="delete" parameterType="String">
+        UPDATE T_VOTE
+        SET USE_YN  = 'N'
+        WHERE UUID = #{uuid}
+    </delete>
+</mapper>
